@@ -11,11 +11,18 @@ $onLineUsers=0;
 //socket客户端集合
 $socketSet=array();
 
+//admin组
+$adminGroup="admins";
+
+//普通用户组
+$userGroup="users";
+
 $io=new SocketIO(1233);
 
-$io->on('connection',function($socket){
-    echo 'connection....';
-    //echo var_dump($socket);
+$io->on('connection',function($connection)use($io){
+
+    //echo var_dump($connection);
+
     global $onLineUsers,$socketSet;
 
     $onLineUsers++;
@@ -24,7 +31,7 @@ $io->on('connection',function($socket){
         "roomid"=>0,
         "from"=>"",
         "uid"=>0,
-        "socketid"=>$socket,
+        "socketid"=>$connection,
         "roleid"=>0,
         "remoteAddress"=>"");
     $hasSocketFlag=0;
@@ -41,7 +48,18 @@ $io->on('connection',function($socket){
     if($hasSocketFlag==0){
         array_push($socketSet,$tmpSocket);
     }
-    $socket->broadcast->emit('connection',array("msgtype"=>1,"socketid"=>$socket,"totalnum"=>$onLineUsers));
+
+
+    $connection->emit('conn',array("msgtype"=>1,"socketid"=>"tets","totalnum"=>$onLineUsers));
+
+    $connection->on('onlineEvent',function($data)use($io){
+
+    });
+
+    $connection->on('disconnect',function(){
+        global $onLineUsers;
+        $onLineUsers--;
+    });
 
 });
 
