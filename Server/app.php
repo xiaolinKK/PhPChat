@@ -21,8 +21,7 @@ $io=new SocketIO(1233);
 
 $io->on('connection',function($connection)use($io){
 
-    //echo var_dump($connection);
-
+   // echo var_dump($io->sockets);
     global $onLineUsers,$socketSet;
 
     $onLineUsers++;
@@ -31,7 +30,7 @@ $io->on('connection',function($connection)use($io){
         "roomid"=>0,
         "from"=>"",
         "uid"=>0,
-        "socketid"=>$connection,
+        "socketid"=>$connection->id,
         "roleid"=>0,
         "remoteAddress"=>"");
     $hasSocketFlag=0;
@@ -50,9 +49,26 @@ $io->on('connection',function($connection)use($io){
     }
 
 
-    $connection->emit('conn',array("msgtype"=>1,"socketid"=>"tets","totalnum"=>$onLineUsers));
+    $connection->emit('conn',array("msgtype"=>1,"socketid"=>$connection->id,"totalnum"=>$onLineUsers));
 
     $connection->on('onlineEvent',function($data)use($io){
+        global $socketSet;
+        $existsFlag=0;
+        if(count($socketSet)>0){
+            for ($i=0;$i<count($socketSet);$i++){
+                if(($socketSet[$i]['from']==$data['from'])&&($socketSet[$i]['socketid']==$data['socketid'])){
+                    $forceData=array("eventTyp"=>1);
+                }else if($socketSet[$i]['socketid']){
+                    $socketSet[$i]['from']=$data['from'];
+                    $socketSet[$i]["roomid"]=$data["roomid"];
+                    $socketSet[$i]["roleid"]=$data["rid"];
+                    $socketSet[$i]["uid"]=$data["uid"];
+                    $existsFlag++;
+                }
+
+            }
+        }
+
 
     });
 
